@@ -5,18 +5,22 @@
   "main": "app.ts",
   "scripts": {
     "start": "node app.ts",
-    "dev": "nodemon  app.ts",
+    "dev": "nodemon app.ts",
     "build": "tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cookie-parser": "^1.4.7",
     "express": "^4.21.2",
+    "express-session": "^1.18.1",
     "express-validator": "^7.2.1"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
+    "@types/express-session": "^1.18.1",
     "@types/node": "^22.10.2",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
