@@ -9,6 +9,7 @@ interface User {
     email: string;
     password: string;
 }
+
 const router = Router();
 
 const mockUsers: User[] = [

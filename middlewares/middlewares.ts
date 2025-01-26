@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { mockUsers } from "../utils/containes";
 
 declare module 'express' {
     interface Request {
@@ -6,16 +7,6 @@ declare module 'express' {
     }
 }
 
-interface User {
-    id: number;
-    name: string;
-    email: string;
-}
-
-const mockUsers: User[] = [
-    { id: 1, name: 'John Doe', email: 'john@example.com' },
-    { id: 2, name: 'Mike Rose', email: 'mike01@example.com' },
-];
 
 export const resolveIndexByUserById = (req: Request, res: Response, next: () => void): void => {
     // Destructure the `id` from the request parameters
