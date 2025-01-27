@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { query,validationResult, body, matchedData, checkSchema } from 'express-validator';
 import { validationSchemas } from "../utils/validationSchemas";
 import { resolveIndexByUserById } from "../middlewares/middlewares";
+import { mockUsers } from "../utils/containes";
 
 interface User {
     id: number;
@@ -11,11 +12,6 @@ interface User {
 }
 
 const router = Router();
-
-const mockUsers: User[] = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', password:"fjsdsjjhwhe" },
-    { id: 2, name: 'Mike Rose', email: 'mike01@example.com',password: "nbsjfdbsjjhwke" },
-];
 
 
 router.get('/api/users', (req: Request, res: Response): void => {

@@ -3,17 +3,19 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { mockUsers } from "../utils/containes";
 // import GoogleStrategy from "passport-google-oauth20";
 
+// serializeUser 
 passport.serializeUser((user: any, done) => {
     console.log("serializeUser ---");
     console.log("serializeUser user ---",user);   
     done(null, user.id);
 });
 
-passport.deserializeUser((id: number, done) => {
+// deserializeUser 
+passport.deserializeUser((name: string, done) => {
     console.log("deserializeUser ---");
-    console.log("deserializeUser id ---",id);   
+    console.log("deserializeUser username ---",name);   
     try{
-        const findUser = mockUsers.find((user) => user.id === id); 
+        const findUser = mockUsers.find((user) => user.name === name); 
         if (!findUser) throw new Error("user not found");
         done(null, findUser);
     }catch(error){
