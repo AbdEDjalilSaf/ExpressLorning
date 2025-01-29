@@ -3,6 +3,7 @@ import { query,validationResult, body, matchedData, checkSchema } from 'express-
 import { validationSchemas } from "../utils/validationSchemas";
 import { resolveIndexByUserById } from "../middlewares/middlewares";
 import { mockUsers } from "../utils/containes";
+import { Usere } from "../config/schemas/user"
 
 interface User {
     id: number;
@@ -41,9 +42,16 @@ router.get("/api/users/:id",resolveIndexByUserById, (req: Request, res: Response
   res.json(findUser);
 });
 
-router.post("/api/users", checkSchema(validationSchemas) ,(req: Request, res: Response): void => {
+router.post("/api/users", checkSchema(validationSchemas) ,async (req: Request, res: Response): Promise<void> => {
   // console.log(req.body);
   const data = matchedData(req);
+  const newAddUser = new Usere(data);
+try{
+  await newAddUser.save();
+  res.status(201).send(newAddUser);
+}catch(err){
+  res.status(400).send({error: (err as Error).message});
+}
   // const { body } = req;
   const result = validationResult(req);
   if(!result.isEmpty()){

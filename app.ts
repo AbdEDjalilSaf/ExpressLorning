@@ -139,7 +139,7 @@ app.post("/api/cart",(req: Request, res: Response) => {
   const { cart } = req.session;
   if(cart){
     console.log("cart ---",cart);
-    cart.push(item);
+    cart.push(item); 
     console.log("item ---",item);
     res.status(201).send(item);
   }else{
