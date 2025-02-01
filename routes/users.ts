@@ -1,16 +1,16 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { query,validationResult, body, matchedData, checkSchema } from 'express-validator';
 import { validationSchemas } from "../utils/validationSchemas";
 import { resolveIndexByUserById } from "../middlewares/middlewares";
 import { mockUsers } from "../utils/containes";
 import { Usere } from "../config/schemas/user"
-
-interface User {
-    id: number;
-    name: string;
-    email: string;
-    password: string;
-}
+import { hashPassword } from '../utils/helpers';
+// interface User {
+//     id: number;
+//     name: string;
+//     email: string;
+//     password: string;
+// }
 
 const router = Router();
 
@@ -24,7 +24,7 @@ router.get('/api/users', (req: Request, res: Response): void => {
         res.json(mockUsers);
         return;
       }
-    if(filter && value ) {
+    if( filter && value ) {
         const filteredUsers = mockUsers.filter((user) => user[filter].includes(value));
         res.json(filteredUsers);
         return;
@@ -44,24 +44,34 @@ router.get("/api/users/:id",resolveIndexByUserById, (req: Request, res: Response
 
 router.post("/api/users", checkSchema(validationSchemas) ,async (req: Request, res: Response): Promise<void> => {
   // console.log(req.body);
-  const data = matchedData(req);
-  const newAddUser = new Usere(data);
-try{
-  await newAddUser.save();
-  res.status(201).send(newAddUser);
-}catch(err){
-  res.status(400).send({error: (err as Error).message});
-}
   // const { body } = req;
+  const data = matchedData(req);
   const result = validationResult(req);
+
   if(!result.isEmpty()){
     res.status(400).send({ errors: result.array() });
     return;
   }
-  // console.log("=============== matchedData ==================",data);
-  const newUser: User = {id:mockUsers[mockUsers.length - 1].id + 1 as number, name: data.name, email: data.email,password: data.password};
-  mockUsers.push(newUser);
-  res.status(201).send(newUser);
+
+const newAddUser = new Usere(data);
+data.password = await hashPassword(data.password);
+try{
+  await newAddUser.save()
+  .then(() => console.log("User saved successfully"))
+  .catch((err) => console.error("Error saving user:", err));
+
+  res.status(201).send(newAddUser);
+}catch(err){
+  console.log("Error ---------------- ",err);
+  res.status(400).send({error: (err as Error).message});
+  return;
+} 
+ 
+  // const { body } = req;
+  // // console.log("=============== matchedData ==================",data);
+  // const newUser: User = {id:mockUsers[mockUsers.length - 1].id + 1 as number, name: data.name, email: data.email,password: data.password};
+  // mockUsers.push(newUser);
+  // res.status(201).send(newUser);
 });
 
 

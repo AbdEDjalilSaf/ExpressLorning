@@ -22,12 +22,38 @@ export const validationSchemas = {
       },
   
     },
-  
     email: {
     
       isEmail: true,
+    
+      errorMessage: 'Email is required',
+      
+      notEmpty: {
   
-      errorMessage: 'Invalid email',
+        errorMessage: 'Email cannot be empty',
+  
+      },
+  
+    },
+    password: { 
+        
+      isString: true,
+  
+      isLength: {
+  
+        errorMessage: 'Password should be between 8 and 50 characters',
+  
+        options: { min: 8, max: 50 },
+  
+      },
+  
+      errorMessage: 'Password is required',
+  
+      notEmpty: {
+  
+        errorMessage: 'Password cannot be empty',
+  
+      },
   
     },
   

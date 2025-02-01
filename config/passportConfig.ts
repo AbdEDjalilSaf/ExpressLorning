@@ -1,6 +1,8 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { mockUsers } from "../utils/containes";
+import { Usere } from "./schemas/user";
+import { comparePassword } from "../utils/helpers";
 // import GoogleStrategy from "passport-google-oauth20";
 
 // serializeUser 
@@ -11,11 +13,11 @@ passport.serializeUser((user: any, done) => {
 });
 
 // deserializeUser 
-passport.deserializeUser((name: string, done) => {
+passport.deserializeUser(async(id, done) => {
     console.log("deserializeUser ---");
-    console.log("deserializeUser username ---",name);   
+    console.log("deserializeUser id ---",id);   
     try{
-        const findUser = mockUsers.find((user) => user.name === name); 
+        const findUser = await Usere.findById(id);  
         if (!findUser) throw new Error("user not found");
         done(null, findUser);
     }catch(error){
@@ -23,19 +25,20 @@ passport.deserializeUser((name: string, done) => {
 }  
 });
 
+
 export default passport.use(
     new LocalStrategy(
         {
         usernameField: "name",
         passwordField: "password",
         },
-        function (name, password, done) {
+        async (name, password, done) => {
             console.log("name ----- :",name);
             console.log("password ----- :",password);
             try{
-                const findUser = mockUsers.find((user) => user.name === name); 
-                if (!findUser) throw new Error("user not found");
-                if(findUser.password !== password) throw new Error("password is incorrect");
+                const findUser = await Usere.findOne({ name }); 
+                if (!findUser) throw new Error("User not found");
+                if (!comparePassword(password, findUser.password)) throw new Error("password is incorrect");
                 done(null, findUser);
             }catch(error){
                 done(error, false);
