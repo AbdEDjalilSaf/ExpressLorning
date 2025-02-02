@@ -4,7 +4,8 @@ import products from "./routes/products";
 import cookieParser from 'cookie-parser';
 import session, { SessionData } from "express-session"
 import passport from "passport";
-import passportConfig from './config/passportConfig'; // passportConfig file
+import passportConfig from './config/passportConfig';
+import MongoStore from 'connect-mongo';
 import mongoose from 'mongoose';
 // import { it } from 'node:test';
 
@@ -44,6 +45,10 @@ app.use(session({
     httpOnly: false,
     secure: false, 
   },
+  store: MongoStore.create({
+    mongoUrl: 'mongodb://localhost:27017/express', 
+    client: mongoose.connection.getClient()
+  })
 }));
 // cookie parser configuration
 app.use(cookieParser("secure"));
@@ -57,8 +62,8 @@ interface User {
 
 
 app.get("/",(req: Request, res: Response) => {  
-  console.log("req.session---",req.session);  
-  console.log("req.session.id---",req.session.id) ;
+  console.log("req.session --- ",req.session);  
+  console.log("req.session.id ++++++++ ",req.session.id) ;
   // req.sessionStore.get(req.session.id,(err,SessionData)=>{
   //   if(err){
   //     console.log("----- err -----",err);
@@ -114,6 +119,17 @@ if(!req.user){
 
 });
 
+app.get("/api/auth/discord",passport.authenticate('discord'),(req, res) => {
+  res.redirect('/api/users');
+});
+
+app.get("/api/auth/discord/redirect",passport.authenticate('discord'),(req: Request, res: Response) => {
+  console.log("Inside /api/auth/discord/redirect");
+  console.log(req.user);
+  console.log(req.session);
+  console.log(req.session.id);
+  res.status(200).send(req.user);
+});
 
 app.get("/api/auth/status",passportConfig.authenticate('local'),(req: Request, res: Response) => {
 // req.sessionStore.get(req.session.id,(err,sessionData)=>{
@@ -125,7 +141,8 @@ app.get("/api/auth/status",passportConfig.authenticate('local'),(req: Request, r
 console.log("Inside /api/auth/status");
 console.log(req.user);
 console.log(req.session);
-// req.user ? res.status(200).send(req.user) : res.status(401).send({ msg: "Not Authenticated" });
+console.log(req.session.id);
+req.user ? res.status(200).send(req.user) : res.status(401).send({ msg: "Not Authenticated" });
 
 });
 
@@ -155,3 +172,8 @@ app.get("/api/cart",(req: Request, res: Response) => {
   }
  res.status(200).send(req.session.cart ? req.session.cart : []);
 });
+
+
+// client_secret : KgV2rwX7uTV2cwZnrbFoO6QYf74wViUf
+// client_id : 1335533852529004574
+// client_url: http://localhost:4000/api/auth/discord/redirect

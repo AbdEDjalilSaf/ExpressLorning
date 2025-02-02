@@ -5,6 +5,11 @@ import { resolveIndexByUserById } from "../middlewares/middlewares";
 import { mockUsers } from "../utils/containes";
 import { Usere } from "../config/schemas/user"
 import { hashPassword } from '../utils/helpers';
+import MongoStore from "connect-mongo"
+import mongoose from "mongoose";
+import session, { SessionData } from "express-session";
+import { usersId } from "../handler/users";
+
 // interface User {
 //     id: number;
 //     name: string;
@@ -12,18 +17,47 @@ import { hashPassword } from '../utils/helpers';
 //     password: string;
 // }
 
+
 const router = Router();
 
+router.use(session({
+  secret:"secure",
+  saveUninitialized: true,
+  resave:false,
+  cookie: { 
+    maxAge: 1000 * 60 * 60 * 24,
+    httpOnly: false,
+    secure: false, 
+  },
+  store: MongoStore.create({
+    mongoUrl: 'mongodb://localhost:27017/express', 
+    client: mongoose.connection.getClient()
+  })
+}));
 
-router.get('/api/users', (req: Request, res: Response): void => {
-     const filter = req.query.filter as 'name' | 'email';
-      const value = req.query.value as string;
-    const result  = validationResult(req);
-    console.log(result);
-    if (!filter || !value) {
-        res.json(mockUsers);
-        return;
-      }
+  
+router.get('/api/users',checkSchema(validationSchemas),(req: Request, res: Response): void => {
+
+console.log("req.session.id ======= ",req.session?.id);  
+
+req.sessionStore.get(req.session.id,(err, sessionData) => {
+  if(err){
+    console.log("Error getting session data",err);
+    throw err;
+  }
+  console.log("Inside session store Get");
+  console.log("sessionData",sessionData);
+});
+
+const filter = req.query.filter as 'name' | 'email' | 'password';
+const value = req.query.value as string;
+  if (!filter || !value) {
+      res.json(mockUsers);
+      return;
+    }
+const result = validationResult(req);
+console.log(result);
+
     if( filter && value ) {
         const filteredUsers = mockUsers.filter((user) => user[filter].includes(value));
         res.json(filteredUsers);
@@ -33,14 +67,7 @@ router.get('/api/users', (req: Request, res: Response): void => {
 
 });
 
-router.get("/api/users/:id",resolveIndexByUserById, (req: Request, res: Response) => {
-  const { userIndex } = req;
-  const findUser = mockUsers[userIndex as number];
-  if (!findUser) {
-    res.status(404).send("User not found");
-  }
-  res.json(findUser);
-});
+router.get("/api/users/:id",resolveIndexByUserById,usersId);
 
 router.post("/api/users", checkSchema(validationSchemas) ,async (req: Request, res: Response): Promise<void> => {
   // console.log(req.body);
@@ -111,14 +138,14 @@ router.delete("/api/users/:id",resolveIndexByUserById, (req: Request, res: Respo
 });
 
 
-router.get("/api/users/:id",resolveIndexByUserById, (req: Request, res: Response) => {
-  const { userIndex } = req;
-  const findUser = mockUsers[userIndex as number];
-  if (!findUser) {
-    res.status(404).send("User not found");
-  }
-  res.json(findUser);
-});
+// router.get("/api/users/:id",resolveIndexByUserById, (req: Request, res: Response) => {
+//   const { userIndex } = req;
+//   const findUser = mockUsers[userIndex as number];
+//   if (!findUser) {
+//     res.status(404).send("User not found");
+//   }
+//   res.json(findUser);
+// });
 
 
 
