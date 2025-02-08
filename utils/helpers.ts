@@ -4,8 +4,10 @@ const saltRounds = 10;
 
 
 export const hashPassword = (password: string): Promise<string> => {
+    if (!password) {
+        throw new Error("Password must be provided");
+      }
 const salt = bcrypt.genSaltSync(saltRounds);
-console.log("salt ---",salt);
 return bcrypt.hash(password, salt);
 };
 

@@ -5,6 +5,18 @@
 
 import type {Config} from 'jest';
 
+// jest.config.js
+module.exports = {
+  preset: 'ts-jest',
+  testMatch: ['**/?(*.)+(spec|test).[tj]s?(x)'],
+  testEnvironment: 'node',
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest',
+  },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  roots: ['<rootDir>'],
+};
+
 const config: Config = {
   // All imported modules in your tests should be mocked automatically
   // automock: false,
