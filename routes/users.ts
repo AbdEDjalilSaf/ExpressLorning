@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { query,validationResult, body, matchedData, checkSchema } from 'express-validator';
 import { validationSchemas } from "../utils/validationSchemas";
-import { resolveIndexByUserById } from "../middlewares/middlewares";
+// import {  } from "../middlewares/middlewares";
 import { mockUsers } from "../utils/containes";
 import { Usere } from "../config/schemas/user"
 import { hashPassword } from '../utils/helpers';
@@ -52,18 +52,18 @@ router.get('/api/users',checkSchema(validationSchemas),(req: Request, res: Respo
   const filter = req.query.filter as 'name' | 'email' | 'password';
   const value = req.query.value as string;
     if (!filter || !value) {
-        res.json(mockUsers);
+        res.json(Usere);
         return;
       }
   const result = validationResult(req);
   console.log(result);
   
       if( filter && value ) {
-          const filteredUsers = mockUsers.filter((user) => user[filter].includes(value));
+          const filteredUsers = Usere.find((user: { [key: string]: any }) => user[filter] === value);
           res.json(filteredUsers);
           return;
         }
-        res.json(mockUsers);
+      res.sendStatus(200);
   
 });
 

@@ -5,7 +5,11 @@ import { Usere } from "./schemas/user";
 import { comparePassword } from "../utils/helpers";
 import { Strategy } from "passport-discord"
 import { discordUser } from "./schemas/discord-user";
+import jwt from "jsonwebtoken";
+
 // import GoogleStrategy from "passport-google-oauth20";
+
+// SECRET_KEY = 'secure-validation'; // Replace with a strong secret key
 
 // ########################## Passport Strategies ########################################
 passport.use( new Strategy({ 
@@ -89,6 +93,7 @@ passport.use(
                 const findUser = await Usere.findOne({ name }); 
                 if (!findUser) throw new Error("User not found");
                 if (!comparePassword(password, findUser.password)) throw new Error("password is incorrect");
+
                 done(null, findUser);
             }catch(error){
                 done(error, false);

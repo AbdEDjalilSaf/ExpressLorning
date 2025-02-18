@@ -14,7 +14,7 @@ export const usersId = async (req: Request, res: Response): Promise<void> => {
 
   if (!id) {
     res.status(400).json({ error: 'User ID is required.' });
-    return;
+    return; 
   }
 
   try {
@@ -84,7 +84,7 @@ export const putApiUserId = async (req: Request, res: Response): Promise<void> =
     return;
   }
 
-  
+
   try {
     // Replace the user document with the new data
     const updatedUser = await Usere.findByIdAndUpdate(

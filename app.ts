@@ -7,6 +7,10 @@ import passport from "passport";
 import passportConfig from './config/passportConfig';
 import MongoStore from 'connect-mongo';
 import mongoose from 'mongoose';
+import bodyParser from "body-parser";
+import jwt from "jsonwebtoken";
+import { Usere } from "./config/schemas/user"
+
 // import { it } from 'node:test';
 
 declare module 'express-session' {
@@ -19,13 +23,14 @@ declare module 'express-session' {
 
 const app = express();
 const PORT = 4000;
+const SECRET_KEY = 'secure-validation';
 
 // passport configuration
 app.use(passport.initialize());
 // app.use(passport.session());
 
 app.use(express.json());
-
+app.use(bodyParser.json());
 // mongoose connection
 mongoose
 .connect("mongodb://localhost:27017/express")
@@ -43,7 +48,8 @@ app.use(session({
   cookie: { 
     maxAge: 1000 * 60 * 60 * 24,
     httpOnly: false,
-    secure: false, 
+    secure: false,
+    sameSite: "none",
   },
   store: MongoStore.create({
     mongoUrl: 'mongodb://localhost:27017/express', 
@@ -54,11 +60,13 @@ app.use(session({
 app.use(cookieParser("secure"));
 
 interface User {
-    id: number;
+    id: string;
     name: string;
     email: string;
     password: string;
 }
+
+
 
 
 app.get("/",(req: Request, res: Response) => {  
@@ -88,10 +96,10 @@ app.listen(PORT, () => {
 });
 
 
-app.post("/api/auth",passportConfig.authenticate('local'),(req: Request, res: Response) => {
-// const { 
-//   body: { name , password }
-//  } = req;
+app.post("/api/auth",passportConfig.authenticate('local'),async(req: Request, res: Response) => {
+const { 
+  name 
+ } = req.body;
 // const findUser = mockUsers.find(user => user.name === name);
 // if(!findUser || findUser?.password !== password){ 
 //   res.status(401).send({ msg: "Your password or username is incorrect" });
@@ -100,8 +108,45 @@ app.post("/api/auth",passportConfig.authenticate('local'),(req: Request, res: Re
 // console.log("req.session.user ---",req.session.user);
 // res.status(200).send(findUser);
 console.log("Inside /api/auth");
-res.sendStatus(200);
+const findUser = await Usere.findOne({ name });
+
+if (findUser) {
+  // req.session.user = {
+  //   id: findUser._id.toString(),
+  //   name: findUser.name,
+  //   password: findUser.password,
+  //   email: findUser.email,
+  // };
+  const user = { name: name };
+  const token = jwt.sign(user, SECRET_KEY, { expiresIn: '20min' });
+  console.log("token ===", token);
+  res.json({ token });
+}
+
+// res.({ token });
+// res.sendStatus(200);
 });
+
+
+// app.get("/api/auth/protected",authenticationJWT,(req: Request, res: Response));
+// const authenticateJWT = (req, res, next) => {
+//   const authHeader = req.headers.authorization;
+
+//   if (authHeader) {
+//       const token = authHeader.split(' ')[1];
+
+//       jwt.verify(token, SECRET_KEY, (err, user) => {
+//           if (err) {
+//               return res.sendStatus(403);
+//           }
+
+//           req.user = user;
+//           next();
+//       });
+//   } else {
+//       res.sendStatus(401);
+//   }
+// };
 
 
 app.post("/api/auth/logout",(req: Request, res: Response) => {
@@ -116,8 +161,8 @@ if(!req.user){
         res.status(200);
         console.log("Outside logout");
      });
-
 });
+
 
 app.get("/api/auth/discord",passport.authenticate('discord'),(req, res) => {
   res.redirect('/api/users');
