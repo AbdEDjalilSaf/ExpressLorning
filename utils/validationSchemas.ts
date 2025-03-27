@@ -43,7 +43,7 @@ export const validationSchemas = {
   
         errorMessage: 'Password should be between 8 and 50 characters',
   
-        options: { min: 8, max: 50 },
+        options: { min: 5, max: 50 },
   
       },
   

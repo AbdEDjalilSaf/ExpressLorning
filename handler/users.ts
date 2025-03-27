@@ -34,12 +34,17 @@ export const usersId = async (req: Request, res: Response): Promise<void> => {
 
 
 
+
+
+
+
+
 export const postApiUser = async (req: Request, res: Response): Promise<void> => {
   // console.log(req.body);
   // const { body } = req;
   const data = matchedData(req);
   const result = validationResult(req);
-
+console.log("result",result);
   if(!result.isEmpty()){
     res.status(400).send({ errors: result.array() });
     return;
@@ -47,6 +52,7 @@ export const postApiUser = async (req: Request, res: Response): Promise<void> =>
 
 const newAddUser = new Usere(data);
 data.password = await hashPassword(data.password);
+console.log("data",data);
 try{
   await newAddUser.save()
   .then(() => console.log("User saved successfully"))
@@ -64,6 +70,11 @@ try{
 // mockUsers.push(newUser);
 // res.status(201).send(newUser);
 }
+
+
+
+
+
 
 
 
@@ -108,6 +119,10 @@ export const putApiUserId = async (req: Request, res: Response): Promise<void> =
 
 
 
+
+
+
+
 export const patchApiUserId = async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params; // Extract the user ID from the URL parameters
   const updateData = req.body; // Extract the update data from the request body
@@ -145,6 +160,11 @@ export const patchApiUserId = async (req: Request, res: Response): Promise<void>
     res.status(500).json({ error: 'Internal server error.' });
   }
 };
+
+
+
+
+
 
 
 
