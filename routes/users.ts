@@ -2,13 +2,13 @@ import { Router, Request, Response, NextFunction } from 'express';
 import { query,validationResult, body, matchedData, checkSchema } from 'express-validator';
 import { validationSchemas } from "../utils/validationSchemas";
 // import {  } from "../middlewares/middlewares";
-import { mockUsers } from "../utils/containes";
+// import { mockUsers } from "../utils/containes";
 import { Usere } from "../config/schemas/user"
 import { hashPassword } from '../utils/helpers';
 import MongoStore from "connect-mongo"
 import mongoose from "mongoose";
 import session, { SessionData } from "express-session";
-import {  usersId , postApiUser , putApiUserId , patchApiUserId , deleteApiUserId } from "../handler/users";
+import { usersId , postApiUser , putApiUserId , patchApiUserId , deleteApiUserId } from "../handler/users";
 
 // interface User {
 //     id: number;

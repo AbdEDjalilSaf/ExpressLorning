@@ -1,7 +1,7 @@
-import express, { Request, Response } from 'express';
 import users from "./routes/users";
 import products from "./routes/products";
 import cookieParser from 'cookie-parser';
+import express, { Request, Response } from 'express';
 import session, { SessionData } from "express-session"
 import passport from "passport";
 import passportConfig from './config/passportConfig';
@@ -27,7 +27,7 @@ declare module 'express-session' {
 }
 
 const app = express();
-const PORT = 4000;
+const PORT = 5000;
 const SECRET_KEY = 'secure-validation';
 
 // passport configuration
@@ -40,10 +40,10 @@ app.use(bodyParser.json());
 
 
 // mongoose connection 
-// mongoose
-// .connect("mongodb://0.0.0.0:27017/express")
-// .then(() => console.log("Connected to database"))
-// .catch((err) => console.log("Error ----- ",err));
+mongoose
+.connect("mongodb://0.0.0.0:27017/express")
+.then(() => console.log("Connected to database"))
+.catch((err) => console.log("Error ----- ",err));
 
 // routes
 app.use(users);
@@ -105,92 +105,94 @@ app.listen(PORT, () => {
 });
 
 
+
+
 // , passportConfig.authenticate('local')
-app.post("/api/auth", async (req: Request, res: Response): Promise<void> => {
-  const cookies = req.cookies;
+app.post("/api/auth", passportConfig.authenticate('local') ,async (req: Request, res: Response): Promise<void> => {
+  // const cookies = req.cookies;
 
-  const { email, password } = req.body;
+  // const { email, password } = req.body;
 
-  console.log("req.body ++++++++", req.body);
-  console.log("email ++++++++", email);
-  console.log("password ---------", password);
+  // console.log("req.body ++++++++", req.body);
+  // console.log("email ++++++++", email);
+  // console.log("password ---------", password);
 
-  if (!email || !password) {
-    res.status(400).json({ 'message': 'Username and password are required.' });
-    return;
-  }
+  // if (!email || !password) {
+  //   res.status(400).json({ 'message': 'Username and password are required.' });
+  //   return;
+  // }
 
-  const foundUser = await Usere.findOne({ email: email }).exec();
-  if (!foundUser) {
-    console.log("User not found First");
-    res.sendStatus(401); // Unauthorized 
-    return;
-  }
+  // const foundUser = await Usere.findOne({ email: email }).exec();
+  // if (!foundUser) {
+  //   console.log("User not found First");
+  //   res.sendStatus(401); // Unauthorized 
+  //   return;
+  // }
 
-  if( password === foundUser.password){
-    console.log("Right password");
-  }else{
-    console.log("Right password");
-  }
+  // if( password === foundUser.password){
+  //   console.log("Right password");
+  // }else{
+  //   console.log("Right password");
+  // }
 
-  // Evaluate password 
-  // console.log("foundUser.password +++++++++++++++", foundUser.password);
-  const match = await bcrypt.compare(password, foundUser.password);
-  // console.log("match =========== ", match);
-  if (match) {
-    const roles = Object.values(foundUser.roles || {}).filter(Boolean);
+  // // Evaluate password 
+  // // console.log("foundUser.password +++++++++++++++", foundUser.password);
+  // const match = await bcrypt.compare(password, foundUser.password);
+  // // console.log("match =========== ", match);
+  // if (match) {
+  //   const roles = Object.values(foundUser.roles || {}).filter(Boolean);
 
-    // Create JWTs
-    const accessToken = jwt.sign(
-      {
-        "UserInfo": {
-          "username": foundUser.name,
-          "roles": roles
-        }
-      },
-      SECRET_KEY,
-      { expiresIn: '10s' }
-    );
+  //   // Create JWTs
+  //   const accessToken = jwt.sign(
+  //     {
+  //       "UserInfo": {
+  //         "username": foundUser.name,
+  //         "roles": roles
+  //       }
+  //     },
+  //     SECRET_KEY,
+  //     { expiresIn: '10s' }
+  //   );
 
-    const newRefreshToken = jwt.sign(
-      { "username": foundUser.name },
-      SECRET_KEY,
-      { expiresIn: '15s' }
-    );
+  //   const newRefreshToken = jwt.sign(
+  //     { "username": foundUser.name },
+  //     SECRET_KEY,
+  //     { expiresIn: '15s' }
+  //   );
 
-    // Handle refresh token array
-    let newRefreshTokenArray =
-      !cookies?.jwt
-        ? foundUser.refreshToken || []
-        : (foundUser.refreshToken || []).filter(rt => rt !== cookies.jwt);
+  //   // Handle refresh token array
+  //   let newRefreshTokenArray =
+  //     !cookies?.jwt
+  //       ? foundUser.refreshToken || []
+  //       : (foundUser.refreshToken || []).filter(rt => rt !== cookies.jwt);
 
-    if (cookies?.jwt) {
-      const refreshToken = cookies.jwt;
-      const foundToken = await Usere.findOne({ refreshToken }).exec();
+  //   if (cookies?.jwt) {
+  //     const refreshToken = cookies.jwt;
+  //     const foundToken = await Usere.findOne({ refreshToken }).exec();
 
-      // Detected refresh token reuse!
-      if (!foundToken) {
-        // Clear out ALL previous refresh tokens
-        newRefreshTokenArray = [];
-      }
+  //     // Detected refresh token reuse!
+  //     if (!foundToken) {
+  //       // Clear out ALL previous refresh tokens
+  //       newRefreshTokenArray = [];
+  //     }
 
-      res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
-    }
+  //     res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
+  //   }
 
-    // Saving refreshToken with current user
-    foundUser.refreshToken = [...(newRefreshTokenArray || []), newRefreshToken];
-    const result = await foundUser.save();
+  //   // Saving refreshToken with current user
+  //   foundUser.refreshToken = [...(newRefreshTokenArray || []), newRefreshToken];
+  //   const result = await foundUser.save();
 
-    // Creates Secure Cookie with refresh token
-    res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 24 * 60 * 60 * 1000 });
+  //   // Creates Secure Cookie with refresh token
+  //   res.cookie('jwt', newRefreshToken, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 24 * 60 * 60 * 1000 });
 
-    // Send authorization roles and access token to user
-    res.json({ accessToken });
+  //   // Send authorization roles and access token to user
+  //   res.json({ accessToken });
 
-  } else {
-    console.log("User not found Last");
-    res.sendStatus(401);
-  }
+  // } else {
+  //   console.log("User not found Last");
+  //   res.sendStatus(401);
+  // }
 
 // const { 
 //   name 
